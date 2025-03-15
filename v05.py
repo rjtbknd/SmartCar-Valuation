@@ -29,7 +29,7 @@ st.set_page_config(page_title="Used Car Analyzer", layout="wide")
 st.title(':car: SmartCar Valuation :dollar:')
 st.header("Data-Driven Used Car Price Analysis & Prediction")
 st.markdown("---")
-st.image('car_header.jpg', use_column_width=True)
+st.image('car_header.jpg', use_container_width=True)
 st.markdown("---")
 
 ########################################
