@@ -24,6 +24,11 @@ from scipy.stats import zscore
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import cross_validate
 
+# NN model code
+import tensorflow as tf
+from tensorflow.keras.wrappers.scikit_learn import KerasRegressor
+#
+
 # Configure Streamlit
 st.set_page_config(page_title="Used Car Analyzer", layout="wide")
 st.title(':car: SmartCar Valuation :dollar:')
@@ -231,6 +236,38 @@ X_train_scaled[num_features] = scaler.fit_transform(X_train[num_features])
 X_test_scaled = X_test.copy() 
 X_test_scaled[num_features] = scaler.transform(X_test[num_features]) 
 
+# NN model code
+def build_simple_nn():
+    # A simple network with one hidden layer
+    model = tf.keras.models.Sequential([
+        tf.keras.layers.Dense(32, activation='relu', input_shape=(len(features),)),
+        tf.keras.layers.Dense(1)
+    ])
+    model.compile(optimizer='adam', loss='mean_squared_error')
+    return model
+
+def build_deep_nn():
+    # A deeper network with several hidden layers
+    model = tf.keras.models.Sequential([
+        tf.keras.layers.Dense(64, activation='relu', input_shape=(len(features),)),
+        tf.keras.layers.Dense(32, activation='relu'),
+        tf.keras.layers.Dense(16, activation='relu'),
+        tf.keras.layers.Dense(1)
+    ])
+    model.compile(optimizer='adam', loss='mean_squared_error')
+    return model
+
+def build_wide_nn():
+    # A wider network with more neurons per layer
+    model = tf.keras.models.Sequential([
+        tf.keras.layers.Dense(128, activation='relu', input_shape=(len(features),)),
+        tf.keras.layers.Dense(128, activation='relu'),
+        tf.keras.layers.Dense(1)
+    ])
+    model.compile(optimizer='adam', loss='mean_squared_error')
+    return model
+#
+
 # Updated models with optimized parameters 
 models = { 
     "Linear Regression": LinearRegression(), 
@@ -238,7 +275,12 @@ models = {
     "Ridge Regression": Ridge(alpha=0.1, max_iter=10000), 
     "Decision Tree": DecisionTreeRegressor(max_depth=10, random_state=42), 
     "Random Forest": RandomForestRegressor(n_estimators=200, max_depth=10, random_state=42), 
-    "Gradient Boosting": GradientBoostingRegressor(n_estimators=200, max_depth=10, random_state=42) 
+    "Gradient Boosting": GradientBoostingRegressor(n_estimators=200, max_depth=10, random_state=42),
+    # NN model code
+    "Neural Network (Simple)": KerasRegressor(build_fn=build_simple_nn, epochs=50, batch_size=32, verbose=0),
+    "Neural Network (Deep)": KerasRegressor(build_fn=build_deep_nn, epochs=50, batch_size=32, verbose=0),
+    "Neural Network (Wide)": KerasRegressor(build_fn=build_wide_nn, epochs=50, batch_size=32, verbose=0)
+    #
 } 
 
 # Model selection and evaluation 
