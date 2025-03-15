@@ -1,7 +1,7 @@
 import subprocess
 import sys
 
-# Check and install core dependencies first
+# Check and install core dependencies
 def install_package(package_name, import_name=None):
     import_name = import_name or package_name
     try:
@@ -15,34 +15,26 @@ install_package("plotly")
 install_package("streamlit")
 install_package("seaborn")
 install_package("scipy")
+install_package("xgboost")
 
-# Now import remaining modules
+# Import necessary modules
 import plotly.express as px
 import streamlit as st
 import pandas as pd
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
+
 from sklearn.linear_model import LinearRegression, Lasso, Ridge
 from sklearn.tree import DecisionTreeRegressor
-from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor, StackingRegressor
 from sklearn.neural_network import MLPRegressor
+from sklearn.svm import SVR
 from sklearn.model_selection import train_test_split, cross_validate
 from sklearn.metrics import r2_score, mean_squared_error
 from sklearn.preprocessing import StandardScaler
 from scipy.stats import zscore
-
-# NN model code
-import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # Suppress TensorFlow warnings
-from scikeras.wrappers import KerasRegressor  # <-- NEW IMPORT
-import tensorflow as tf
-from tensorflow.keras.wrappers.scikit_learn import KerasRegressor
-#
-
-#
-from sklearn.neural_network import MLPRegressor  # <-- ADD THIS IMPORT
-#
+from xgboost import XGBRegressor
 
 # Configure Streamlit
 st.set_page_config(page_title="Used Car Analyzer", layout="wide")
@@ -251,37 +243,6 @@ X_train_scaled[num_features] = scaler.fit_transform(X_train[num_features])
 X_test_scaled = X_test.copy() 
 X_test_scaled[num_features] = scaler.transform(X_test[num_features]) 
 
-# NN model code
-def build_simple_nn():
-    # A simple network with one hidden layer
-    model = tf.keras.models.Sequential([
-        tf.keras.layers.Dense(32, activation='relu', input_shape=(len(features),)),
-        tf.keras.layers.Dense(1)
-    ])
-    model.compile(optimizer='adam', loss='mean_squared_error')
-    return model
-
-def build_deep_nn():
-    # A deeper network with several hidden layers
-    model = tf.keras.models.Sequential([
-        tf.keras.layers.Dense(64, activation='relu', input_shape=(len(features),)),
-        tf.keras.layers.Dense(32, activation='relu'),
-        tf.keras.layers.Dense(16, activation='relu'),
-        tf.keras.layers.Dense(1)
-    ])
-    model.compile(optimizer='adam', loss='mean_squared_error')
-    return model
-
-def build_wide_nn():
-    # A wider network with more neurons per layer
-    model = tf.keras.models.Sequential([
-        tf.keras.layers.Dense(128, activation='relu', input_shape=(len(features),)),
-        tf.keras.layers.Dense(128, activation='relu'),
-        tf.keras.layers.Dense(1)
-    ])
-    model.compile(optimizer='adam', loss='mean_squared_error')
-    return model
-
 # Updated models with optimized parameters 
 models = { 
     "Linear Regression": LinearRegression(), 
@@ -296,32 +257,40 @@ models = {
     "Neural Network (Wide)": KerasRegressor(build_fn=build_wide_nn, epochs=50, batch_size=32, verbose=0)
     #
     # Neural Network Models
-    #"NN: Basic (1 Layer)": MLPRegressor(
-    #    hidden_layer_sizes=(50,),
-    #    activation='relu',
-    #    solver='adam',
-    #    early_stopping=True,
-    #    random_state=35,
-    #    max_iter=200,
-    #    validation_fraction=0.2  # Added validation split
-    #),
-    #"NN: Deep (3 Layers)": MLPRegressor(
-    #    hidden_layer_sizes=(64, 32, 16), # Smaller architecture
-    #    activation='relu',  # Changed from tanh for better convergence
-    #    solver='adam',  # Changed from sgd
-    #    learning_rate='adaptive',
-    #    random_state=35,
-    #    max_iter=200, # Reduced iterations
-    #    batch_size=128
-    #),
-    #"NN: Wide (2 Layers)": MLPRegressor(
-    #    hidden_layer_sizes=(128, 64),
-    #    activation='relu',
-    #    solver='adam',
-    #    random_state=35,
-    #    max_iter=200,
-    #    early_stopping=True  # Added early stopping
-    #)
+    "XGBoost": XGBRegressor(n_estimators=200, max_depth=10, learning_rate=0.1, random_state=42),
+    "SVR": SVR(kernel='rbf', C=1.0, epsilon=0.1),
+    "Stacked Model": StackingRegressor(
+         estimators=[
+             ('rf', RandomForestRegressor(n_estimators=200, max_depth=10, random_state=42)),
+             ('xgb', XGBRegressor(n_estimators=200, max_depth=10, learning_rate=0.1, random_state=42))
+         ],
+         final_estimator=LinearRegression()
+    ),
+    "Neural Network (Basic)": MLPRegressor(
+         hidden_layer_sizes=(50,),
+         activation='relu',
+         solver='adam',
+         early_stopping=True,
+         random_state=35,
+         max_iter=200,
+         validation_fraction=0.2
+    ),
+    "Neural Network (Deep)": MLPRegressor(
+         hidden_layer_sizes=(64, 32, 16),
+         activation='relu',
+         solver='adam',
+         learning_rate='adaptive',
+         random_state=35,
+         max_iter=200
+    ),
+    "Neural Network (Wide)": MLPRegressor(
+         hidden_layer_sizes=(128, 64),
+         activation='relu',
+         solver='adam',
+         random_state=35,
+         max_iter=200,
+         early_stopping=True
+    )
 } 
 
 # Model selection and evaluation 
@@ -373,4 +342,4 @@ with st.form("prediction_form"):
         predicted_price = model.predict(new_data_scaled)[0] 
         
         st.success(f"Predicted AskPrice: ₹ {predicted_price:,.0f}") 
-        st.info(f"Model Confidence (Cross-Val R²): {avg_r2:.3f}") 
+        st.info(f"Model Confidence (Cross-Val R²): {avg_r2:.4f}") 
