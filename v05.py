@@ -9,13 +9,13 @@ def install_package(package_name, import_name=None):
     except ImportError:
         subprocess.run([sys.executable, "-m", "pip", "install", package_name], check=True)
 
-# Install required packages
+# Install required packages (XGBoost removed)
 install_package("scikit-learn", "sklearn")
 install_package("plotly")
 install_package("streamlit")
 install_package("seaborn")
 install_package("scipy")
-#install_package("xgboost==1.7.6")
+# Note: XGBoost installation removed
 
 # Import necessary modules
 import plotly.express as px
@@ -27,14 +27,14 @@ import matplotlib.pyplot as plt
 
 from sklearn.linear_model import LinearRegression, Lasso, Ridge
 from sklearn.tree import DecisionTreeRegressor
-from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor, StackingRegressor
+from sklearn.ensemble import (RandomForestRegressor, GradientBoostingRegressor,
+                              StackingRegressor, HistGradientBoostingRegressor)
 from sklearn.neural_network import MLPRegressor
-from sklearn.svm import SVR
+from sklearn.kernel_ridge import KernelRidge
 from sklearn.model_selection import train_test_split, cross_validate
 from sklearn.metrics import r2_score, mean_squared_error
 from sklearn.preprocessing import StandardScaler
 from scipy.stats import zscore
-#from xgboost import XGBRegressor
 
 # Configure Streamlit
 st.set_page_config(page_title="Used Car Analyzer", layout="wide")
@@ -259,10 +259,12 @@ models = {
     # Neural Network Models
     #"XGBoost": XGBRegressor(n_estimators=200, max_depth=10, learning_rate=0.1, random_state=42),
     "SVR": SVR(kernel='rbf', C=1.0, epsilon=0.1),
+    "Kernel Ridge Regression": KernelRidge(alpha=1.0, kernel='rbf'),
+    "HistGradientBoosting": HistGradientBoostingRegressor(max_iter=200, random_state=42),
     "Stacked Model": StackingRegressor(
          estimators=[
-             ('rf', RandomForestRegressor(n_estimators=200, max_depth=10, random_state=42))
-    #         ('xgb', XGBRegressor(n_estimators=200, max_depth=10, learning_rate=0.1, random_state=42))
+             ('rf', RandomForestRegressor(n_estimators=200, max_depth=10, random_state=42)),
+             ('hgb', HistGradientBoostingRegressor(max_iter=200, random_state=42))
          ],
          final_estimator=LinearRegression()
     ),
