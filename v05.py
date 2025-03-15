@@ -1,3 +1,6 @@
+import subprocess
+import sys
+
 try:
     import plotly.express as px
 except ModuleNotFoundError:
