@@ -33,8 +33,8 @@ from sklearn.preprocessing import StandardScaler
 from scipy.stats import zscore
 
 # NN model code
-#import tensorflow as tf
-#from tensorflow.keras.wrappers.scikit_learn import KerasRegressor
+import tensorflow as tf
+from tensorflow.keras.wrappers.scikit_learn import KerasRegressor
 #
 
 #
