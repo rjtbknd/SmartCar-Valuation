@@ -1,4 +1,8 @@
-python3 -m pip install --user plotly
+try:
+    import plotly.express as px
+except ModuleNotFoundError:
+    subprocess.run([sys.executable, "-m", "pip", "install", "plotly"])
+    import plotly.express as px
 
 import streamlit as st
 import pandas as pd
