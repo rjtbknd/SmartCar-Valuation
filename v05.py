@@ -33,6 +33,9 @@ from sklearn.preprocessing import StandardScaler
 from scipy.stats import zscore
 
 # NN model code
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # Suppress TensorFlow warnings
+from scikeras.wrappers import KerasRegressor  # <-- NEW IMPORT
 import tensorflow as tf
 from tensorflow.keras.wrappers.scikit_learn import KerasRegressor
 #
