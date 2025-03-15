@@ -1,7 +1,16 @@
+import subprocess
+import sys
+
+# Try to import plotly. If not found, attempt to install it using the --user flag.
+try:
+    import plotly.express as px
+except ModuleNotFoundError:
+    subprocess.run([sys.executable, "-m", "pip", "install", "--user", "plotly"], check=True)
+    import plotly.express as px
+
 import streamlit as st
 import pandas as pd
 import numpy as np
-import plotly.express as px
 import seaborn as sns
 import matplotlib.pyplot as plt
 
@@ -12,7 +21,6 @@ from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import r2_score, mean_squared_error
 from scipy.stats import zscore
-#from sklearn import StandardScaler
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import cross_validate
 
@@ -36,13 +44,12 @@ def load_data():
     df = df.drop(columns=['AdditionInfo', 'PostedDate'])
     df = df.dropna(subset=['kmDriven', 'AskPrice'])
     
-    # Remove outliers using IQR for Age and AskPrice
-  #  # Modified in load_data() function
-    Q1 = df[['Age', 'AskPrice', 'kmDriven']].quantile(0.25)  # Typo fixed from kmDriven to kmDriven
+    # Remove outliers using IQR for Age, AskPrice, and kmDriven
+    Q1 = df[['Age', 'AskPrice', 'kmDriven']].quantile(0.25)
     Q3 = df[['Age', 'AskPrice', 'kmDriven']].quantile(0.75)
     IQR = Q3 - Q1
     df = df[~((df[['Age', 'AskPrice', 'kmDriven']] < (Q1 - 1.5 * IQR)) | 
-            (df[['Age', 'AskPrice', 'kmDriven']] > (Q3 + 1.5 * IQR))).any(axis=1)]
+              (df[['Age', 'AskPrice', 'kmDriven']] > (Q3 + 1.5 * IQR))).any(axis=1)]
     
     return df
 
@@ -202,17 +209,15 @@ df_reg = df.copy()
 
 # Mapping dictionaries for conversion 
 transmission_map = {'Automatic': 0, 'Manual': 1} 
-#owner_map = {'first': 0, 'second': 1} 
 fuel_map = {'Petrol': 1, 'Diesel': 2, 'Hybrid/CNG': 3, 'hybrid': 4} 
 
 # Apply mapping and clean data 
 df_reg['Transmission_Num'] = df_reg['Transmission'].map(transmission_map) 
-#df_reg['Owner_Num'] = df_reg['Owner'].map(owner_map) 
 df_reg['FuelType_Num'] = df_reg['FuelType'].map(fuel_map) 
-df_reg = df_reg.dropna(subset=['Transmission_Num', 'FuelType_Num']) #'Owner_Num', 
+df_reg = df_reg.dropna(subset=['Transmission_Num', 'FuelType_Num'])
 
 # Regression setup 
-features = ['Age', 'kmDriven', 'Transmission_Num', 'FuelType_Num'] #'Owner_Num', 
+features = ['Age', 'kmDriven', 'Transmission_Num', 'FuelType_Num']
 target = 'AskPrice' 
 X = df_reg[features] 
 y = df_reg[target] 
@@ -242,7 +247,7 @@ model = models[selected_method]
 
 # Cross-validated metrics 
 cv_results = cross_validate(model, X_train_scaled, y_train, cv=5, 
-                          scoring=('r2', 'neg_mean_squared_error')) 
+                              scoring=('r2', 'neg_mean_squared_error')) 
 avg_r2 = cv_results['test_r2'].mean() 
 avg_mse = -cv_results['test_neg_mean_squared_error'].mean() 
 
@@ -252,21 +257,12 @@ y_pred = model.predict(X_test_scaled)
 test_r2 = r2_score(y_test, y_pred) 
 test_mse = mean_squared_error(y_test, y_pred) 
 
-# Display metrics 
-#st.markdown("**Model Performance**") 
-#col1, col2 = st.columns(2) 
-#col1.metric("Cross-Validated R²", f"{avg_r2:.3f}") 
-#col2.metric("Cross-Validated MSE", f"{avg_mse:,.0f}") 
-#col1.metric("Test Set R²", f"{test_r2:.3f}") 
-#col2.metric("Test Set MSE", f"{test_mse:,.0f}") 
-
 # Prediction form 
 st.markdown("### Predict AskPrice for a New Car") 
 with st.form("prediction_form"): 
     input_age = st.number_input("Age (Years)", min_value=0.0, value=5.0, step=0.5) 
     input_km = st.number_input("Kilometers Driven", min_value=0, value=50000, step=1000) 
     input_transmission = st.selectbox("Transmission", list(transmission_map.keys())) 
-#    input_owner = st.selectbox("Owner", list(owner_map.keys())) 
     input_fuel = st.selectbox("Fuel Type", list(fuel_map.keys())) 
     submit_prediction = st.form_submit_button("Calculate")  
     
@@ -275,7 +271,6 @@ with st.form("prediction_form"):
             "Age": [input_age], 
             "kmDriven": [input_km], 
             "Transmission_Num": [transmission_map[input_transmission]], 
-#            "Owner_Num": [owner_map[input_owner]], 
             "FuelType_Num": [fuel_map[input_fuel]] 
         }) 
         
