@@ -30,6 +30,7 @@ from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import (RandomForestRegressor, GradientBoostingRegressor,
                               StackingRegressor, HistGradientBoostingRegressor)
 from sklearn.neural_network import MLPRegressor
+from sklearn.svm import SVR
 from sklearn.kernel_ridge import KernelRidge
 from sklearn.model_selection import train_test_split, cross_validate
 from sklearn.metrics import r2_score, mean_squared_error
