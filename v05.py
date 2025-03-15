@@ -1,4 +1,4 @@
-pip install --user plotly
+python3 -m pip install --user plotly
 
 import streamlit as st
 import pandas as pd
