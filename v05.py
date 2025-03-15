@@ -15,7 +15,7 @@ install_package("plotly")
 install_package("streamlit")
 install_package("seaborn")
 install_package("scipy")
-install_package("xgboost==1.7.6")
+#install_package("xgboost==1.7.6")
 
 # Import necessary modules
 import plotly.express as px
@@ -257,7 +257,7 @@ models = {
     #"Neural Network (Wide)": KerasRegressor(build_fn=build_wide_nn, epochs=50, batch_size=32, verbose=0)
     #
     # Neural Network Models
-    "XGBoost": XGBRegressor(n_estimators=200, max_depth=10, learning_rate=0.1, random_state=42),
+    #"XGBoost": XGBRegressor(n_estimators=200, max_depth=10, learning_rate=0.1, random_state=42),
     "SVR": SVR(kernel='rbf', C=1.0, epsilon=0.1),
     "Stacked Model": StackingRegressor(
          estimators=[
