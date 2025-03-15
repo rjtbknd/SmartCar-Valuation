@@ -25,11 +25,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import cross_validate
 
 # NN model code
-try:
-    import tensorflow as tf
-except ModuleNotFoundError:
-    subprocess.run([sys.executable, "-m", "pip", "install", "--user", "tensorflow"], check=True)
-    import tensorflow as tf
+import tensorflow as tf
 from tensorflow.keras.wrappers.scikit_learn import KerasRegressor
 #
 
