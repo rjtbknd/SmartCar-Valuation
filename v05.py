@@ -1,32 +1,36 @@
 import subprocess
 import sys
 
-# Try to import plotly. If not found, attempt to install it using the --user flag.
-try:
-    import sklearn
-except ImportError:
-    subprocess.run([sys.executable, "-m", "pip", "install", "scikit-learn"])
-try:
-    import plotly.express as px
-except ModuleNotFoundError:
-    subprocess.run([sys.executable, "-m", "pip", "install", "--user", "plotly"], check=True)
-    import plotly.express as px
+# Check and install core dependencies first
+def install_package(package_name, import_name=None):
+    import_name = import_name or package_name
+    try:
+        __import__(import_name)
+    except ImportError:
+        subprocess.run([sys.exec executable, "-m", "pip", "install", package_name], check=True)
 
+# Install required packages
+install_package("scikit-learn", "sklearn")
+install_package("plotly")
+install_package("streamlit")
+install_package("seaborn")
+install_package("scipy")
+
+# Now import remaining modules
+import plotly.express as px
 import streamlit as st
 import pandas as pd
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
-
-# Regression models and metrics
 from sklearn.linear_model import LinearRegression, Lasso, Ridge
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
-from sklearn.model_selection import train_test_split
+from sklearn.neural_network import MLPRegressor
+from sklearn.model_selection import train_test_split, cross_validate
 from sklearn.metrics import r2_score, mean_squared_error
-from scipy.stats import zscore
 from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import cross_validate
+from scipy.stats import zscore
 
 # NN model code
 #import tensorflow as tf
