@@ -34,7 +34,7 @@ from sklearn.model_selection import train_test_split, cross_validate
 from sklearn.metrics import r2_score, mean_squared_error
 from sklearn.preprocessing import StandardScaler
 from scipy.stats import zscore
-from xgboost import XGBRegressor
+#from xgboost import XGBRegressor
 
 # Configure Streamlit
 st.set_page_config(page_title="Used Car Analyzer", layout="wide")
