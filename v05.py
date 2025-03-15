@@ -25,8 +25,12 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import cross_validate
 
 # NN model code
-import tensorflow as tf
-from tensorflow.keras.wrappers.scikit_learn import KerasRegressor
+#import tensorflow as tf
+#from tensorflow.keras.wrappers.scikit_learn import KerasRegressor
+#
+
+#
+from sklearn.neural_network import MLPRegressor  # <-- ADD THIS IMPORT
 #
 
 # Configure Streamlit
@@ -237,35 +241,35 @@ X_test_scaled = X_test.copy()
 X_test_scaled[num_features] = scaler.transform(X_test[num_features]) 
 
 # NN model code
-def build_simple_nn():
-    # A simple network with one hidden layer
-    model = tf.keras.models.Sequential([
-        tf.keras.layers.Dense(32, activation='relu', input_shape=(len(features),)),
-        tf.keras.layers.Dense(1)
-    ])
-    model.compile(optimizer='adam', loss='mean_squared_error')
-    return model
-
-def build_deep_nn():
-    # A deeper network with several hidden layers
-    model = tf.keras.models.Sequential([
-        tf.keras.layers.Dense(64, activation='relu', input_shape=(len(features),)),
-        tf.keras.layers.Dense(32, activation='relu'),
-        tf.keras.layers.Dense(16, activation='relu'),
-        tf.keras.layers.Dense(1)
-    ])
-    model.compile(optimizer='adam', loss='mean_squared_error')
-    return model
-
-def build_wide_nn():
-    # A wider network with more neurons per layer
-    model = tf.keras.models.Sequential([
-        tf.keras.layers.Dense(128, activation='relu', input_shape=(len(features),)),
-        tf.keras.layers.Dense(128, activation='relu'),
-        tf.keras.layers.Dense(1)
-    ])
-    model.compile(optimizer='adam', loss='mean_squared_error')
-    return model
+#def build_simple_nn():
+#    # A simple network with one hidden layer
+#    model = tf.keras.models.Sequential([
+#        tf.keras.layers.Dense(32, activation='relu', input_shape=(len(features),)),
+#        tf.keras.layers.Dense(1)
+#    ])
+#    model.compile(optimizer='adam', loss='mean_squared_error')
+#    return model
+#
+#def build_deep_nn():
+#    # A deeper network with several hidden layers
+#    model = tf.keras.models.Sequential([
+#        tf.keras.layers.Dense(64, activation='relu', input_shape=(len(features),)),
+#        tf.keras.layers.Dense(32, activation='relu'),
+#        tf.keras.layers.Dense(16, activation='relu'),
+#        tf.keras.layers.Dense(1)
+#    ])
+#    model.compile(optimizer='adam', loss='mean_squared_error')
+#    return model
+#
+#def build_wide_nn():
+#    # A wider network with more neurons per layer
+#    model = tf.keras.models.Sequential([
+#        tf.keras.layers.Dense(128, activation='relu', input_shape=(len(features),)),
+#        tf.keras.layers.Dense(128, activation='relu'),
+#        tf.keras.layers.Dense(1)
+#    ])
+#    model.compile(optimizer='adam', loss='mean_squared_error')
+#    return model
 #
 
 # Updated models with optimized parameters 
@@ -277,10 +281,35 @@ models = {
     "Random Forest": RandomForestRegressor(n_estimators=200, max_depth=10, random_state=42), 
     "Gradient Boosting": GradientBoostingRegressor(n_estimators=200, max_depth=10, random_state=42),
     # NN model code
-    "Neural Network (Simple)": KerasRegressor(build_fn=build_simple_nn, epochs=50, batch_size=32, verbose=0),
-    "Neural Network (Deep)": KerasRegressor(build_fn=build_deep_nn, epochs=50, batch_size=32, verbose=0),
-    "Neural Network (Wide)": KerasRegressor(build_fn=build_wide_nn, epochs=50, batch_size=32, verbose=0)
+    #"Neural Network (Simple)": KerasRegressor(build_fn=build_simple_nn, epochs=50, batch_size=32, verbose=0),
+    #"Neural Network (Deep)": KerasRegressor(build_fn=build_deep_nn, epochs=50, batch_size=32, verbose=0),
+    #"Neural Network (Wide)": KerasRegressor(build_fn=build_wide_nn, epochs=50, batch_size=32, verbose=0)
     #
+    # Neural Network Models
+    "NN: Basic (1 Layer)": MLPRegressor(  # <-- FIRST NN MODEL
+        hidden_layer_sizes=(100,), 
+        activation='relu',
+        solver='adam',
+        early_stopping=True,
+        random_state=42,
+        max_iter=1000
+    ),
+    "NN: Deep (3 Layers)": MLPRegressor(  # <-- SECOND NN MODEL
+        hidden_layer_sizes=(128, 64, 32),
+        activation='tanh',
+        solver='sgd',
+        learning_rate='adaptive',
+        random_state=42,
+        max_iter=2000
+    ),
+    "NN: Wide (2 Layers)": MLPRegressor(  # <-- THIRD NN MODEL
+        hidden_layer_sizes=(256, 128),
+        activation='relu',
+        solver='adam',
+        batch_size=64,
+        random_state=42,
+        max_iter=1000
+    )
 } 
 
 # Model selection and evaluation 
