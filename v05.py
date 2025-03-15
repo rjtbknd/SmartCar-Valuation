@@ -261,8 +261,8 @@ models = {
     "SVR": SVR(kernel='rbf', C=1.0, epsilon=0.1),
     "Stacked Model": StackingRegressor(
          estimators=[
-             ('rf', RandomForestRegressor(n_estimators=200, max_depth=10, random_state=42)),
-             ('xgb', XGBRegressor(n_estimators=200, max_depth=10, learning_rate=0.1, random_state=42))
+             ('rf', RandomForestRegressor(n_estimators=200, max_depth=10, random_state=42))
+    #         ('xgb', XGBRegressor(n_estimators=200, max_depth=10, learning_rate=0.1, random_state=42))
          ],
          final_estimator=LinearRegression()
     ),
