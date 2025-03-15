@@ -249,36 +249,35 @@ X_test_scaled = X_test.copy()
 X_test_scaled[num_features] = scaler.transform(X_test[num_features]) 
 
 # NN model code
-#def build_simple_nn():
-#    # A simple network with one hidden layer
-#    model = tf.keras.models.Sequential([
-#        tf.keras.layers.Dense(32, activation='relu', input_shape=(len(features),)),
-#        tf.keras.layers.Dense(1)
-#    ])
-#    model.compile(optimizer='adam', loss='mean_squared_error')
-#    return model
-#
-#def build_deep_nn():
-#    # A deeper network with several hidden layers
-#    model = tf.keras.models.Sequential([
-#        tf.keras.layers.Dense(64, activation='relu', input_shape=(len(features),)),
-#        tf.keras.layers.Dense(32, activation='relu'),
-#        tf.keras.layers.Dense(16, activation='relu'),
-#        tf.keras.layers.Dense(1)
-#    ])
-#    model.compile(optimizer='adam', loss='mean_squared_error')
-#    return model
-#
-#def build_wide_nn():
-#    # A wider network with more neurons per layer
-#    model = tf.keras.models.Sequential([
-#        tf.keras.layers.Dense(128, activation='relu', input_shape=(len(features),)),
-#        tf.keras.layers.Dense(128, activation='relu'),
-#        tf.keras.layers.Dense(1)
-#    ])
-#    model.compile(optimizer='adam', loss='mean_squared_error')
-#    return model
-#
+def build_simple_nn():
+    # A simple network with one hidden layer
+    model = tf.keras.models.Sequential([
+        tf.keras.layers.Dense(32, activation='relu', input_shape=(len(features),)),
+        tf.keras.layers.Dense(1)
+    ])
+    model.compile(optimizer='adam', loss='mean_squared_error')
+    return model
+
+def build_deep_nn():
+    # A deeper network with several hidden layers
+    model = tf.keras.models.Sequential([
+        tf.keras.layers.Dense(64, activation='relu', input_shape=(len(features),)),
+        tf.keras.layers.Dense(32, activation='relu'),
+        tf.keras.layers.Dense(16, activation='relu'),
+        tf.keras.layers.Dense(1)
+    ])
+    model.compile(optimizer='adam', loss='mean_squared_error')
+    return model
+
+def build_wide_nn():
+    # A wider network with more neurons per layer
+    model = tf.keras.models.Sequential([
+        tf.keras.layers.Dense(128, activation='relu', input_shape=(len(features),)),
+        tf.keras.layers.Dense(128, activation='relu'),
+        tf.keras.layers.Dense(1)
+    ])
+    model.compile(optimizer='adam', loss='mean_squared_error')
+    return model
 
 # Updated models with optimized parameters 
 models = { 
@@ -289,37 +288,37 @@ models = {
     "Random Forest": RandomForestRegressor(n_estimators=200, max_depth=10, random_state=42), 
     "Gradient Boosting": GradientBoostingRegressor(n_estimators=200, max_depth=10, random_state=42),
     # NN model code
-    #"Neural Network (Simple)": KerasRegressor(build_fn=build_simple_nn, epochs=50, batch_size=32, verbose=0),
-    #"Neural Network (Deep)": KerasRegressor(build_fn=build_deep_nn, epochs=50, batch_size=32, verbose=0),
-    #"Neural Network (Wide)": KerasRegressor(build_fn=build_wide_nn, epochs=50, batch_size=32, verbose=0)
+    "Neural Network (Simple)": KerasRegressor(build_fn=build_simple_nn, epochs=50, batch_size=32, verbose=0),
+    "Neural Network (Deep)": KerasRegressor(build_fn=build_deep_nn, epochs=50, batch_size=32, verbose=0),
+    "Neural Network (Wide)": KerasRegressor(build_fn=build_wide_nn, epochs=50, batch_size=32, verbose=0)
     #
     # Neural Network Models
-    "NN: Basic (1 Layer)": MLPRegressor(
-        hidden_layer_sizes=(50,),
-        activation='relu',
-        solver='adam',
-        early_stopping=True,
-        random_state=35,
-        max_iter=200,
-        validation_fraction=0.2  # Added validation split
-    ),
-    "NN: Deep (3 Layers)": MLPRegressor(
-        hidden_layer_sizes=(64, 32, 16), # Smaller architecture
-        activation='relu',  # Changed from tanh for better convergence
-        solver='adam',  # Changed from sgd
-        learning_rate='adaptive',
-        random_state=35,
-        max_iter=200, # Reduced iterations
-        batch_size=128
-    ),
-    "NN: Wide (2 Layers)": MLPRegressor(
-        hidden_layer_sizes=(128, 64),
-        activation='relu',
-        solver='adam',
-        random_state=35,
-        max_iter=200,
-        early_stopping=True  # Added early stopping
-    )
+    #"NN: Basic (1 Layer)": MLPRegressor(
+    #    hidden_layer_sizes=(50,),
+    #    activation='relu',
+    #    solver='adam',
+    #    early_stopping=True,
+    #    random_state=35,
+    #    max_iter=200,
+    #    validation_fraction=0.2  # Added validation split
+    #),
+    #"NN: Deep (3 Layers)": MLPRegressor(
+    #    hidden_layer_sizes=(64, 32, 16), # Smaller architecture
+    #    activation='relu',  # Changed from tanh for better convergence
+    #    solver='adam',  # Changed from sgd
+    #    learning_rate='adaptive',
+    #    random_state=35,
+    #    max_iter=200, # Reduced iterations
+    #    batch_size=128
+    #),
+    #"NN: Wide (2 Layers)": MLPRegressor(
+    #    hidden_layer_sizes=(128, 64),
+    #    activation='relu',
+    #    solver='adam',
+    #    random_state=35,
+    #    max_iter=200,
+    #    early_stopping=True  # Added early stopping
+    #)
 } 
 
 # Model selection and evaluation 
@@ -372,14 +371,3 @@ with st.form("prediction_form"):
         
         st.success(f"Predicted AskPrice: ₹ {predicted_price:,.0f}") 
         st.info(f"Model Confidence (Cross-Val R²): {avg_r2:.3f}") 
-
-########################################
-# 8. Data Summary Section (Optional)
-########################################
-
-st.markdown("---")
-st.subheader("Data Summary (Filtered)")
-st.write(f"**Dataset Size (after filtering):** {df_filtered.shape[0]} rows")
-st.write("**Columns:**", df_filtered.columns.tolist())
-st.write("**Sample Data:**")
-st.dataframe(df_filtered.head(10))
