@@ -299,7 +299,7 @@ models = {
         activation='relu',
         solver='adam',
         early_stopping=True,
-        random_state=42,
+        random_state=35,
         max_iter=200,
         validation_fraction=0.2  # Added validation split
     ),
@@ -308,15 +308,15 @@ models = {
         activation='relu',  # Changed from tanh for better convergence
         solver='adam',  # Changed from sgd
         learning_rate='adaptive',
-        random_state=42,
-        max_iter=500, # Reduced iterations
+        random_state=35,
+        max_iter=200, # Reduced iterations
         batch_size=128
     ),
     "NN: Wide (2 Layers)": MLPRegressor(
         hidden_layer_sizes=(128, 64),
         activation='relu',
         solver='adam',
-        random_state=42,
+        random_state=35,
         max_iter=200,
         early_stopping=True  # Added early stopping
     )
