@@ -7,7 +7,7 @@ def install_package(package_name, import_name=None):
     try:
         __import__(import_name)
     except ImportError:
-        subprocess.run([sys.exec executable, "-m", "pip", "install", package_name], check=True)
+        subprocess.run([sys.executable, "-m", "pip", "install", package_name], check=True)
 
 # Install required packages
 install_package("scikit-learn", "sklearn")
