@@ -15,7 +15,7 @@ install_package("plotly")
 install_package("streamlit")
 install_package("seaborn")
 install_package("scipy")
-install_package("xgboost")
+install_package("xgboost==1.7.6")
 
 # Import necessary modules
 import plotly.express as px
