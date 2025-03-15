@@ -1,3 +1,5 @@
+pip install --upgrade pip
+
 import subprocess
 import sys
 
