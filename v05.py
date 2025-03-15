@@ -252,9 +252,9 @@ models = {
     "Random Forest": RandomForestRegressor(n_estimators=200, max_depth=10, random_state=42), 
     "Gradient Boosting": GradientBoostingRegressor(n_estimators=200, max_depth=10, random_state=42),
     # NN model code
-    "Neural Network (Simple)": KerasRegressor(build_fn=build_simple_nn, epochs=50, batch_size=32, verbose=0),
-    "Neural Network (Deep)": KerasRegressor(build_fn=build_deep_nn, epochs=50, batch_size=32, verbose=0),
-    "Neural Network (Wide)": KerasRegressor(build_fn=build_wide_nn, epochs=50, batch_size=32, verbose=0)
+    #"Neural Network (Simple)": KerasRegressor(build_fn=build_simple_nn, epochs=50, batch_size=32, verbose=0),
+    #"Neural Network (Deep)": KerasRegressor(build_fn=build_deep_nn, epochs=50, batch_size=32, verbose=0),
+    #"Neural Network (Wide)": KerasRegressor(build_fn=build_wide_nn, epochs=50, batch_size=32, verbose=0)
     #
     # Neural Network Models
     "XGBoost": XGBRegressor(n_estimators=200, max_depth=10, learning_rate=0.1, random_state=42),
