@@ -1,9 +1,11 @@
-pip install --upgrade pip
-
 import subprocess
 import sys
 
 # Try to import plotly. If not found, attempt to install it using the --user flag.
+try:
+    import sklearn
+except ImportError:
+    subprocess.run([sys.executable, "-m", "pip", "install", "scikit-learn"])
 try:
     import plotly.express as px
 except ModuleNotFoundError:
@@ -288,29 +290,31 @@ models = {
     #"Neural Network (Wide)": KerasRegressor(build_fn=build_wide_nn, epochs=50, batch_size=32, verbose=0)
     #
     # Neural Network Models
-    "NN: Basic (1 Layer)": MLPRegressor(  # <-- FIRST NN MODEL
-        hidden_layer_sizes=(100,), 
+    "NN: Basic (1 Layer)": MLPRegressor(
+        hidden_layer_sizes=(100,),
         activation='relu',
         solver='adam',
         early_stopping=True,
         random_state=42,
-        max_iter=1000
+        max_iter=1000,
+        validation_fraction=0.2  # Added validation split
     ),
-    "NN: Deep (3 Layers)": MLPRegressor(  # <-- SECOND NN MODEL
+    "NN: Deep (3 Layers)": MLPRegressor(
         hidden_layer_sizes=(128, 64, 32),
-        activation='tanh',
-        solver='sgd',
+        activation='relu',  # Changed from tanh for better convergence
+        solver='adam',  # Changed from sgd
         learning_rate='adaptive',
         random_state=42,
-        max_iter=2000
+        max_iter=2000,
+        batch_size=256  # Larger batch size
     ),
-    "NN: Wide (2 Layers)": MLPRegressor(  # <-- THIRD NN MODEL
+    "NN: Wide (2 Layers)": MLPRegressor(
         hidden_layer_sizes=(256, 128),
         activation='relu',
         solver='adam',
-        batch_size=64,
         random_state=42,
-        max_iter=1000
+        max_iter=1000,
+        early_stopping=True  # Added early stopping
     )
 } 
 
@@ -323,6 +327,16 @@ cv_results = cross_validate(model, X_train_scaled, y_train, cv=5,
                               scoring=('r2', 'neg_mean_squared_error')) 
 avg_r2 = cv_results['test_r2'].mean() 
 avg_mse = -cv_results['test_neg_mean_squared_error'].mean() 
+
+# Add memory management for neural networks
+if "NN" in selected_method:
+    from sklearn.exceptions import ConvergenceWarning
+    import warnings
+    warnings.filterwarnings("ignore", category=ConvergenceWarning)
+    
+    st.info("""Neural Network Note: 
+    Training may take longer than traditional models. 
+    Using early stopping and adaptive learning for stability.""")
 
 # Final training and test evaluation 
 model.fit(X_train_scaled, y_train) 
