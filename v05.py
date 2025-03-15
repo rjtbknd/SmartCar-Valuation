@@ -295,29 +295,29 @@ models = {
     #
     # Neural Network Models
     "NN: Basic (1 Layer)": MLPRegressor(
-        hidden_layer_sizes=(100,),
+        hidden_layer_sizes=(50,),
         activation='relu',
         solver='adam',
         early_stopping=True,
         random_state=42,
-        max_iter=1000,
+        max_iter=200,
         validation_fraction=0.2  # Added validation split
     ),
     "NN: Deep (3 Layers)": MLPRegressor(
-        hidden_layer_sizes=(128, 64, 32),
+        hidden_layer_sizes=(64, 32, 16), # Smaller architecture
         activation='relu',  # Changed from tanh for better convergence
         solver='adam',  # Changed from sgd
         learning_rate='adaptive',
         random_state=42,
-        max_iter=2000,
-        batch_size=256  # Larger batch size
+        max_iter=500, # Reduced iterations
+        batch_size=128
     ),
     "NN: Wide (2 Layers)": MLPRegressor(
-        hidden_layer_sizes=(256, 128),
+        hidden_layer_sizes=(128, 64),
         activation='relu',
         solver='adam',
         random_state=42,
-        max_iter=1000,
+        max_iter=200,
         early_stopping=True  # Added early stopping
     )
 } 
