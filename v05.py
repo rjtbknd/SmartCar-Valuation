@@ -221,22 +221,22 @@ This section uses enhanced preprocessing with:
 df_reg = df.copy() 
 
 # Mapping dictionaries for conversion 
-transmission_map = {'Automatic': 0, 'Manual': 1} 
+#transmission_map = {'Automatic': 0, 'Manual': 1} 
 fuel_map = {'Petrol': 1, 'Diesel': 2, 'Hybrid/CNG': 3, 'hybrid': 4} 
 
 # Apply mapping and clean data 
-df_reg['Transmission_Num'] = df_reg['Transmission'].map(transmission_map) 
+#df_reg['Transmission_Num'] = df_reg['Transmission'].map(transmission_map) 
 df_reg['FuelType_Num'] = df_reg['FuelType'].map(fuel_map) 
 df_reg = df_reg.dropna(subset=['Transmission_Num', 'FuelType_Num'])
 
 # Regression setup 
-features = ['Age', 'kmDriven', 'Transmission_Num', 'FuelType_Num']
+features = ['Age', 'kmDriven', 'FuelType_Num'] #'Transmission_Num', 
 target = 'AskPrice' 
 X = df_reg[features] 
 y = df_reg[target] 
 
 # Split data and scale features 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42) #earlier test_size = 0.11 
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.11, random_state=42) #earlier test_size = 0.11 
 scaler = StandardScaler() 
 num_features = ['Age', 'kmDriven'] 
 X_train_scaled = X_train.copy() 
@@ -327,7 +327,7 @@ st.markdown("### Predict AskPrice for a New Car")
 with st.form("prediction_form"): 
     input_age = st.number_input("Age (Years)", min_value=0.0, value=5.0, step=0.5) 
     input_km = st.number_input("Kilometers Driven", min_value=0, value=50000, step=1000) 
-    input_transmission = st.selectbox("Transmission", list(transmission_map.keys())) 
+    # input_transmission = st.selectbox("Transmission", list(transmission_map.keys())) 
     input_fuel = st.selectbox("Fuel Type", list(fuel_map.keys())) 
     submit_prediction = st.form_submit_button("Calculate")  
     
@@ -335,7 +335,7 @@ with st.form("prediction_form"):
         new_data = pd.DataFrame({ 
             "Age": [input_age], 
             "kmDriven": [input_km], 
-            "Transmission_Num": [transmission_map[input_transmission]], 
+            # "Transmission_Num": [transmission_map[input_transmission]], 
             "FuelType_Num": [fuel_map[input_fuel]] 
         }) 
         
