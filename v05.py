@@ -236,7 +236,7 @@ X = df_reg[features]
 y = df_reg[target] 
 
 # Split data and scale features 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.11, random_state=42) #earlier test_size = 0.11 
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.15, random_state=42) #earlier test_size = 0.11 
 scaler = StandardScaler() 
 num_features = ['Age', 'kmDriven'] 
 X_train_scaled = X_train.copy() 
