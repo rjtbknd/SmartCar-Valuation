@@ -27,12 +27,14 @@ import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression, Lasso, Ridge
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import (RandomForestRegressor, GradientBoostingRegressor,
-                              StackingRegressor, HistGradientBoostingRegressor)
+                              StackingRegressor, HistGradientBoostingRegressor, ExtraTreesRegressor)
 from sklearn.neural_network import MLPRegressor
 from sklearn.kernel_ridge import KernelRidge
 from sklearn.model_selection import train_test_split, cross_validate
 from sklearn.metrics import r2_score, mean_squared_error
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, PolynomialFeatures
+from sklearn.pipeline import Pipeline
+from sklearn.base import clone
 from scipy.stats import zscore
 
 # Configure Streamlit
@@ -44,7 +46,91 @@ st.image('car_header.jpg', use_container_width=True)
 st.markdown("---")
 
 ########################################
-# 1. Data Loading & Preprocessing
+# Child Code Functions (Price Prediction)
+########################################
+
+def load_and_preprocess_data(csv_file):
+    # Load the data
+    df = pd.read_csv(csv_file)
+    # Drop columns not needed and rows missing crucial values
+    df = df.drop(columns=['AdditionInfo', 'PostedDate'])
+    df = df.dropna(subset=['kmDriven', 'AskPrice'])
+    
+    # Remove outliers using the IQR method for Age, AskPrice, and kmDriven
+    Q1 = df[['Age', 'AskPrice', 'kmDriven']].quantile(0.25)
+    Q3 = df[['Age', 'AskPrice', 'kmDriven']].quantile(0.75)
+    IQR = Q3 - Q1
+    df = df[~((df[['Age', 'AskPrice', 'kmDriven']] < (Q1 - 1.5 * IQR)) |
+              (df[['Age', 'AskPrice', 'kmDriven']] > (Q3 + 1.5 * IQR))).any(axis=1)]
+    return df
+
+def prepare_regression_data(df):
+    # Map categorical features to numerical values
+    transmission_map = {'Automatic': 0, 'Manual': 1}
+    fuel_map = {'Petrol': 1, 'Diesel': 2, 'Hybrid/CNG': 3, 'hybrid': 4}
+    df['Transmission_Num'] = df['Transmission'].map(transmission_map)
+    df['FuelType_Num'] = df['FuelType'].map(fuel_map)
+    df = df.dropna(subset=['Transmission_Num', 'FuelType_Num'])
+    
+    features = ['Age', 'kmDriven', 'Transmission_Num', 'FuelType_Num']
+    target = 'AskPrice'
+    X = df[features]
+    y = df[target]
+    return X, y
+
+def get_models():
+    models = {
+        "Linear": LinearRegression(),
+        "Lasso": Lasso(alpha=0.01, max_iter=10000),
+        "Ridge": Ridge(alpha=0.1, max_iter=10000),
+        "Decision_Tree": DecisionTreeRegressor(max_depth=8, random_state=42),
+        "Random_Forest": RandomForestRegressor(n_estimators=500, max_depth=15, random_state=42),
+        "Gradient_Boosting": GradientBoostingRegressor(n_estimators=500, max_depth=8, learning_rate=0.05, random_state=42),
+        "Kernel_Ridge_Regression": KernelRidge(alpha=0.5, kernel='rbf', gamma=0.1),
+        "HistGradientBoosting": HistGradientBoostingRegressor(max_iter=500, learning_rate=0.1, random_state=42),
+        "ExtraTrees": ExtraTreesRegressor(n_estimators=500, max_depth=15, random_state=42),
+        "Polynomial_Ridge": Pipeline([
+            ('poly', PolynomialFeatures(degree=2, include_bias=False)),
+            ('ridge', Ridge(alpha=1.0))
+        ]),
+        "Stacked_Model_Advanced": StackingRegressor(
+            estimators=[
+                ('rf', RandomForestRegressor(n_estimators=500, max_depth=15, random_state=42)),
+                ('et', ExtraTreesRegressor(n_estimators=500, max_depth=15, random_state=42)),
+                ('hgb', HistGradientBoostingRegressor(max_iter=500, learning_rate=0.1, random_state=42))
+            ],
+            final_estimator=Ridge(alpha=0.1)
+        ),
+        "NN_Basic": MLPRegressor(
+             hidden_layer_sizes=(150,),
+             activation='relu',
+             solver='adam',
+             early_stopping=True,
+             random_state=35,
+             max_iter=500,
+             validation_fraction=0.2
+        ),
+        "NN_Deep": MLPRegressor(
+             hidden_layer_sizes=(200, 150, 100),
+             activation='relu',
+             solver='adam',
+             learning_rate='adaptive',
+             random_state=35,
+             max_iter=500
+        ),
+        "NN_Wide": MLPRegressor(
+             hidden_layer_sizes=(250, 150),
+             activation='relu',
+             solver='adam',
+             random_state=35,
+             max_iter=500,
+             early_stopping=True
+        )
+    }
+    return models
+
+########################################
+# 1. Data Loading & Preprocessing (Visualizations)
 ########################################
 @st.cache_data
 def load_data():
@@ -149,7 +235,7 @@ fig2 = px.bar(avg_price_km_fuel, x='kmDriven_bin', y='AskPrice', color='FuelType
 st.plotly_chart(fig2, use_container_width=True)
 
 ########################################
-# 7. Price Prediction Section
+# 7. Price Prediction Section (Updated)
 ########################################
 st.markdown("---")
 st.subheader("Price Predictor")
@@ -157,81 +243,31 @@ st.markdown("""
 This section uses enhanced preprocessing:
 - Outlier removal
 - Feature scaling
-- Optimized model parameters
+- Advanced regression models for improved accuracy
 - Cross-validated performance metrics
 """)
 
-# Prepare regression data
-df_reg = df.copy()
-transmission_map = {'Automatic': 0, 'Manual': 1}
-fuel_map = {'Petrol': 1, 'Diesel': 2, 'Hybrid/CNG': 3, 'hybrid': 4}
-df_reg['Transmission_Num'] = df_reg['Transmission'].map(transmission_map)
-df_reg['FuelType_Num'] = df_reg['FuelType'].map(fuel_map)
-df_reg = df_reg.dropna(subset=['Transmission_Num', 'FuelType_Num'])
+# Use child code functions to load and prepare regression data
+df_reg = load_and_preprocess_data("used_cars_dataset_v2_edited.csv")
+X, y = prepare_regression_data(df_reg)
 
-features = ['Age', 'kmDriven', 'Transmission_Num', 'FuelType_Num']
-target = 'AskPrice'
-X = df_reg[features]
-y = df_reg[target]
-
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1128, random_state=42)
+# Standardize numerical features
 scaler = StandardScaler()
 num_features = ['Age', 'kmDriven']
-X_train_scaled = X_train.copy()
-X_train_scaled[num_features] = scaler.fit_transform(X_train[num_features])
-X_test_scaled = X_test.copy()
-X_test_scaled[num_features] = scaler.transform(X_test[num_features])
+X[num_features] = scaler.fit_transform(X[num_features])
 
-# Optimized models
-models = {
-    "Linear Regression": LinearRegression(),
-    "Lasso Regression": Lasso(alpha=0.01, max_iter=10000),
-    "Ridge Regression": Ridge(alpha=0.1, max_iter=10000),
-    "Decision Tree": DecisionTreeRegressor(max_depth=8, random_state=42),
-    "Random Forest": RandomForestRegressor(n_estimators=300, max_depth=12, random_state=42),
-    "Gradient Boosting": GradientBoostingRegressor(n_estimators=300, max_depth=6, learning_rate=0.05, random_state=42),
-    "Kernel Ridge Regression": KernelRidge(alpha=0.5, kernel='rbf', gamma=0.1),
-    "HistGradientBoosting": HistGradientBoostingRegressor(max_iter=300, learning_rate=0.1, random_state=42),
-    "Stacked Model": StackingRegressor(
-         estimators=[
-             ('rf', RandomForestRegressor(n_estimators=300, max_depth=12, random_state=42)),
-             ('hgb', HistGradientBoostingRegressor(max_iter=300, learning_rate=0.1, random_state=42))
-         ],
-         final_estimator=Ridge(alpha=0.1)
-    ),
-    "Neural Network (Basic)": MLPRegressor(
-         hidden_layer_sizes=(100,),
-         activation='relu',
-         solver='adam',
-         early_stopping=True,
-         random_state=35,
-         max_iter=300,
-         validation_fraction=0.2
-    ),
-    "Neural Network (Deep)": MLPRegressor(
-         hidden_layer_sizes=(150, 100, 50),
-         activation='relu',
-         solver='adam',
-         learning_rate='adaptive',
-         random_state=35,
-         max_iter=300
-    ),
-    "Neural Network (Wide)": MLPRegressor(
-         hidden_layer_sizes=(200, 100),
-         activation='relu',
-         solver='adam',
-         random_state=35,
-         max_iter=300,
-         early_stopping=True
-    )
-}
+# Get models from child code
+models = get_models()
 
+# Select regression method
 selected_method = st.selectbox("Select Regression Method", list(models.keys()))
 model = models[selected_method]
 
+# Split data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1128, random_state=42)
+
 # Cross-validated metrics
-cv_results = cross_validate(model, X_train_scaled, y_train, cv=5,
-                            scoring=('r2', 'neg_mean_squared_error'))
+cv_results = cross_validate(model, X_train, y_train, cv=5, scoring=('r2', 'neg_mean_squared_error'))
 avg_r2 = cv_results['test_r2'].mean()
 avg_mse = -cv_results['test_neg_mean_squared_error'].mean()
 
@@ -241,29 +277,29 @@ if "Neural Network" in selected_method:
     warnings.filterwarnings("ignore", category=ConvergenceWarning)
     st.info("Neural Network Note: Training may take longer than traditional models.")
 
-model.fit(X_train_scaled, y_train)
-y_pred = model.predict(X_test_scaled)
+model.fit(X_train, y_train)
+y_pred = model.predict(X_test)
 test_r2 = r2_score(y_test, y_pred)
 test_mse = mean_squared_error(y_test, y_pred)
 
-# Prediction form
 st.markdown("### Predict AskPrice for a New Car")
 with st.form("prediction_form"):
     input_age = st.number_input("Age (Years)", min_value=0.0, value=5.0, step=0.5)
     input_km = st.number_input("Kilometers Driven", min_value=0, value=50000, step=1000)
-    input_transmission = st.selectbox("Transmission", list(transmission_map.keys()))
-    input_fuel = st.selectbox("Fuel Type", list(fuel_map.keys()))
+    transmission_options = {'Automatic': 0, 'Manual': 1}
+    fuel_options = {'Petrol': 1, 'Diesel': 2, 'Hybrid/CNG': 3, 'hybrid': 4}
+    input_transmission = st.selectbox("Transmission", list(transmission_options.keys()))
+    input_fuel = st.selectbox("Fuel Type", list(fuel_options.keys()))
     submit_prediction = st.form_submit_button("Calculate")
     
     if submit_prediction:
         new_data = pd.DataFrame({
             "Age": [input_age],
             "kmDriven": [input_km],
-            "Transmission_Num": [transmission_map[input_transmission]],
-            "FuelType_Num": [fuel_map[input_fuel]]
+            "Transmission_Num": [transmission_options[input_transmission]],
+            "FuelType_Num": [fuel_options[input_fuel]]
         })
-        new_data_scaled = new_data.copy()
-        new_data_scaled[num_features] = scaler.transform(new_data[num_features])
-        predicted_price = model.predict(new_data_scaled)[0]
+        new_data[num_features] = scaler.transform(new_data[num_features])
+        predicted_price = model.predict(new_data)[0]
         st.success(f"Predicted AskPrice: ₹ {predicted_price:,.0f}")
         st.info(f"Model Confidence (Cross-Val R²): {avg_r2:.4f}")
