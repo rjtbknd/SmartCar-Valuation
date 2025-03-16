@@ -227,7 +227,7 @@ fuel_map = {'Petrol': 1, 'Diesel': 2, 'Hybrid/CNG': 3, 'hybrid': 4}
 # Apply mapping and clean data 
 #df_reg['Transmission_Num'] = df_reg['Transmission'].map(transmission_map) 
 df_reg['FuelType_Num'] = df_reg['FuelType'].map(fuel_map) 
-df_reg = df_reg.dropna(subset=['Transmission_Num', 'FuelType_Num'])
+df_reg = df_reg.dropna(subset=['FuelType_Num']) # 'Transmission_Num', 
 
 # Regression setup 
 features = ['Age', 'kmDriven', 'FuelType_Num'] #'Transmission_Num', 
